@@ -70,7 +70,7 @@ def get_prs(limit=100, state='all'):
 def valid_reports():
 		valid = {
 		1 : "Languages committed per User",
-		2 : "Ratio of Merged/Unmerged Pull Requests (Status=Open and Closed)",
+		2 : "Ratio of Merged/Unmerged Pull Requests (Status=All)",
 		3 : "Ratio of Merged/Unmerged Pull Requests (Status=Closed)",
 		4 : "Contribution Count of last 100 Pull Requests",
 		5 : "Repository Maintenance (Documentation submission vs Code Submission",
@@ -87,38 +87,37 @@ def report(rtype):
 	elif rtype == 1:
 		repo = get_repos()
 		report = Report(repo=repo).user_languages()
-		return report
+		return out2csv(report, '../reports/issue_contrib.csv')
 	elif rtype == 2:
 		pulls = get_prs()
 		report = Report(pulls=pulls).pr_ratios()
-		return report
+		return out2csv(report, '../reports/open_closed_merged_prs.csv')
 	elif rtype == 3:
 		pulls = get_prs(state='closed')
-		report = Report(pulls).pr_ratios()
-		return report
+		report = Report(pulls=pulls).pr_ratios()
+		return out2csv(report, '../reports/closed_merged_prs.csv')
 	elif rtype == 4:
 		pulls = get_prs()
 		report = Report(pulls=pulls).contribution_count()
-		return report
+		return out2csv(report, '../reports/positive_negative_pr_contributions.csv')
 	elif rtype == 5:
 		pulls = get_prs()
 		report = Report(pulls=pulls).repo_maintenance()
-		return report
+		return out2csv(report, '../reports/repo_maintenance.csv')
 	elif rtype == 6:
 		repo = get_repos()
 		report = Report(repo=repo).open_issues()
-		return report
+		return out2csv(report, '../reports/issue_assignees.csv')
 	elif rtype == 7:
 		repo = get_repos()
 		report = Report(repo=repo).issue_comments()
-		return report
+		return out2csv(report, '../closed_issue_comments.csv')
 	elif rtype == 8:
 		#This is a heavy computation. Limiting to 10 PRs, as we're analyzing each sentence
 		#in each comment in a single PR
 		pulls = get_prs(limit=10)
 		report = Report(pulls=pulls).pr_sentiment()
-		print(out2csv(report))
-		return report
+		return out2csv(report, '../sentiment_analysis.csv')
 	else:
 		return True
 

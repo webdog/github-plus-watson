@@ -8,7 +8,6 @@ class Report(object):
 		self.org = org
 		self.pulls = pulls
 
-
 	def user_languages(self):
 		clist = []
 		for r in self.repo:
@@ -16,7 +15,6 @@ class Report(object):
 			for c in commits:
 				cdict = {}
 				cfiles = str(r.commit(c.sha).files[0]['filename'])
-				print(r.commit(c.sha).files)
 				committer = str(r.commit(c.sha).author)
 				if "/" in cfiles:
 					files = cfiles.split("/")[-1].split(".")[-1]
@@ -30,10 +28,10 @@ class Report(object):
 					cdict['author'] = committer
 				clist.append(cdict)
 
-		print(clist)
 		return clist
 
 	def pr_ratios(self):
+		plist = []
 		plmrg = "pull_merged"
 		plnmrg = "pull_not_merged"
 		pltot = "pull_total"
@@ -43,14 +41,16 @@ class Report(object):
 				pltot: 0
 			}
 		for pr in self.pulls:
+			pr = pr.refresh()
 			if pr.is_merged():
 				pdict[plmrg] += 1
 			else:
 				pdict[plnmrg] += 1
-		pdict[pltot] = pdict[plmrg] + pdict[plnmrg]
 
-		print(pdict)
-		return pdict
+		pdict[pltot] = pdict[plmrg] + pdict[plnmrg]
+		plist.append(pdict)
+
+		return plist
 
 	def contribution_count(self):
 		plist = []
@@ -72,7 +72,6 @@ class Report(object):
 				number: ""
 
 			}
-			#pr = self.pulls.refresh()
 
 			if pr.additions is None:
 				pr.additions = 0
@@ -92,7 +91,7 @@ class Report(object):
 				pdict[neq] = total
 			plist.append(pdict)
 
-		return(plist)
+		return plist
 
 	def repo_maintenance(self):
 		rcontrib = "repo_contrib"
@@ -120,7 +119,8 @@ class Report(object):
 				else:
 					pdict[rcontrib] += 1
 				plist.append(pdict)
-		return(plist)
+
+		return plist
 
 	def open_issues(self):
 		alist = []
@@ -152,8 +152,8 @@ class Report(object):
 				alist.append(adict)
 
 		#Return a tuple of the count of assigned vs unassigned, and the specific issue information
-		rtup = (alist, acount)
-		return rtup
+		#rtup = (alist, acount)
+		return alist
 
 
 	def issue_comments(self, state='closed'):
@@ -171,6 +171,7 @@ class Report(object):
 				cdict[number] = i.number
 				cdict[ncomments] = i.comments
 				clist.append(cdict)
+
 		return clist
 
 
@@ -210,6 +211,6 @@ class Report(object):
 				sdict[overall] = sent[1]
 			slist.append(sdict)
 
-		print(slist)
+
 		return slist
 
