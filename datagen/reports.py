@@ -14,7 +14,11 @@ class Report(object):
 			commits = r.iter_commits(number=100)
 			for c in commits:
 				cdict = {}
-				cfiles = str(r.commit(c.sha).files[0]['filename'])
+				try:
+					cfiles = str(r.commit(c.sha).files[0]['filename'])
+				except IndexError:
+					print("Empty commit, continue")
+					pass
 				committer = str(r.commit(c.sha).author)
 				if "/" in cfiles:
 					files = cfiles.split("/")[-1].split(".")[-1]
