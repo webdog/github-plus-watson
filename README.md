@@ -13,14 +13,14 @@ The script (gh-reports.py) is run with command line arguments. The arguments are
 -o - Specify the organization name (If not specified, will use the user's repositories)  
 -u - User account (**Required**)  
 -t [1-8] - Which report you want to run (**Required**)  
-  1 : "Languages committed per User",  
-  2 : "Ratio of Merged/Unmerged Pull Requests (Status=All)",  
-  3 : "Ratio of Merged/Unmerged Pull Requests (Status=Closed)",  
-  4 : "Contribution Count of last 100 Pull Requests",
-  5 : "Repository Maintenance (Documentation submission vs Code Submission",  
-  6 : "Issues open by Assignee",  
-  7 : "Number of Comments on Closed Issues",  
-  8 : "Analyze sentiment of conversations in last 100 Pull Requests"  
+  - 1 : "Languages committed per User",  
+  - 2 : "Ratio of Merged/Unmerged Pull Requests (Status=All)",  
+  - 3 : "Ratio of Merged/Unmerged Pull Requests (Status=Closed)",  
+  - 4 : "Contribution Count of last 100 Pull Requests",
+  - 5 : "Repository Maintenance (Documentation submission vs Code Submission",  
+  - 6 : "Issues open by Assignee",  
+  - 7 : "Number of Comments on Closed Issues",  
+  - 8 : "Analyze sentiment of conversations in last 100 Pull Requests"  
 -e [True|False] - Specify GitHub Enterprise instance. False by default  
 
 -p - Public repo vs org repo. Not currently used.  
