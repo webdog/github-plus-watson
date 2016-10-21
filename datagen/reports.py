@@ -11,7 +11,7 @@ class Report(object):
 	def user_languages(self):
 		clist = []
 		for r in self.repo:
-			commits = r.iter_commits(number=11)
+			commits = r.iter_commits(number=100)
 			for c in commits:
 				cdict = {}
 				cfiles = str(r.commit(c.sha).files[0]['filename'])
