@@ -11,7 +11,7 @@ class Report(object):
 	def user_languages(self):
 		clist = []
 		for r in self.repo:
-			commits = r.iter_commits(number=100)
+			commits = r.iter_commits(number=500)
 			for c in commits:
 				cdict = {}
 				try:
