@@ -15,14 +15,13 @@ parser.add_argument('-o', action="store", dest="org")
 parser.add_argument('-u', action="store", dest="user", required=True)
 parser.add_argument('-t', action="store", dest="report_type", type=int, required=True)
 parser.add_argument('-e', action="store_true", dest="ghe", default=False)
-parser.add_argument('-p', action="store", dest="public")
+parser.add_argument('-p', action="store_true", dest="public")
 
 args = parser.parse_args()
 
 user = args.user
 token = getpass("please enter your P.A.T. for authentication\n>")
 reqs_max = 5000
-pub_search = True
 
 
 def authenticate(ghe=args.ghe, user=user,token=token):
@@ -31,20 +30,28 @@ def authenticate(ghe=args.ghe, user=user,token=token):
 		return login.authenticate_ghe()
 
 	else:
-		print("this is running")
 		login = Login(user, token)
 		return login.authenticate()
 
 gh = authenticate()
 
-def get_org():
-	for orgs in gh.iter_orgs():
-		# We only allow an org at a time for restrict rate-limiting or performance issues
-		org = [orgs for orgs in gh.iter_orgs() if orgs.login == args.org ]
-	return org
+def get_org(pub=None):
+	if pub == None:
+		for orgs in gh.iter_orgs():
+			# We only allow an org at a time for restrict rate-limiting or performance issues
+			org = [orgs.refresh() for orgs in gh.iter_orgs() if orgs.login == args.org ]
+		return org
+	else:
+		org = [ gh.organization(pub) ]
+		return org
 
-def get_repos(org_search=True, user_search=False):
-	if org_search:
+def get_repos(org_search=True, user_search=False, pub_search=args.public):
+	if pub_search:
+		for orgs in get_org(pub=args.org):
+			print(orgs)
+			repo = [r.refresh() for r in orgs.iter_repos() if r.name == args.repo]
+		return repo
+	elif org_search:
 		for orgs in get_org():
 			repos = [repos for repos in orgs.iter_repos() if repos.name == args.repo]
 		return repos
@@ -54,8 +61,7 @@ def get_repos(org_search=True, user_search=False):
 	elif org_search and user_search:
 		return "Cannot return both user and org repos"
 	else:
-		repo = [r.refresh() for r in gh.iter_user_repos('angular') if r.name == 'angular']
-		return repo
+		exit()
 
 
 def get_prs(limit=100, state='all'):
