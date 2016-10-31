@@ -56,6 +56,22 @@ class Report(object):
 
 		return plist
 
+	def pr_report(self):
+		plist = []
+		for pr in self.pulls:
+			pr = pr.refresh()
+			pdict = {}
+			pdict['pr-id'] = pr.number
+			pdict['state'] = pr.is_merged()
+			if pr.comments is None:
+				pdict['num-comments'] = 0
+			else:
+				pdict['num-comments'] = pr.comments
+
+			plist.append(pdict)
+		return plist
+
+
 	def contribution_count(self):
 		plist = []
 		pos = "net_positive"

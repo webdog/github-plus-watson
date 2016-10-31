@@ -48,7 +48,6 @@ def get_org(pub=None):
 def get_repos(org_search=True, user_search=False, pub_search=args.public):
 	if pub_search:
 		for orgs in get_org(pub=args.org):
-			print(orgs)
 			repo = [r.refresh() for r in orgs.iter_repos() if r.name == args.repo]
 		return repo
 	elif org_search:
@@ -82,7 +81,8 @@ def valid_reports():
 		5 : "Repository Maintenance (Documentation submission vs Code Submission",
 		6 : "Issues open by Assignee",
 		7 : "Number of Comments on Closed Issues",
-		8 : "Analyze sentiment of conversations in last 100 Pull Requests"
+		8 : "Analyze sentiment of conversations in last 100 Pull Requests",
+		9 : "Pull Requests in State=Closed with Number of Comments"
 	}
 		return valid
 
@@ -123,7 +123,11 @@ def report(rtype):
 		#in each comment in a single PR
 		pulls = get_prs(limit=10)
 		report = Report(pulls=pulls).pr_sentiment()
-		return out2csv(report, '../sentiment_analysis.csv')
+		return out2csv(report, '../reports/sentiment_analysis.csv')
+	elif rtype == 9:
+		pulls = get_prs(limit=500)
+		report = Report(pulls=pulls).pr_report()
+		return out2csv(report, '../reports/pr_report_closed.csv')
 	else:
 		return True
 
