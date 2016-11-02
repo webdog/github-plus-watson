@@ -61,12 +61,18 @@ class Report(object):
 		for pr in self.pulls:
 			pr = pr.refresh()
 			pdict = {}
-			pdict['pr-id'] = pr.number
-			pdict['state'] = pr.is_merged()
-			if pr.comments is None:
-				pdict['num-comments'] = 0
+			pdict['pr_id'] = pr.number
+			pdict['pr_status'] = pr.state
+
+			if pr.is_merged() == True:
+				pdict['is_merged'] = "merged"
 			else:
-				pdict['num-comments'] = pr.comments
+				pdict['is_merged'] = "not_merged"
+
+			if pr.comments is None:
+				pdict['num_comments'] = 0
+			else:
+				pdict['num_comments'] = pr.comments
 
 			plist.append(pdict)
 		return plist
@@ -233,4 +239,73 @@ class Report(object):
 
 
 		return slist
+
+	def sentiment_repo_report(self):
+		comlist = []
+		slist = []
+		rdict = {}
+		rlist = []
+
+			#This is a hack to to get the number of objects
+			#Python doesn't normally have a len() attribute
+			#for generator statements.
+			#print("hey these are the releases", release)
+			#for rls in r.iter_releases():
+			#	print("here's in the loop")
+			#	print(rls)
+			#	print("after the loop")
+			#print(release)
+			#releases += len(release)
+
+		for pr in self.pulls:
+			pr = pr.refresh()
+			repo = pr.repository[1]
+			rdict['repository'] = repo
+
+
+		for pr in self.pulls:
+			pr = pr.refresh()
+			number = "number"
+			body = "body"
+			author = "comment_author"
+			comment = pr.iter_comments()
+			comments = comment.refresh()
+
+			for c in comments:
+				comdict = {}
+				comdict[number] = pr.number
+				comdict[body] = c.body
+				user = c.user.refresh()
+				comdict[author] = user.name
+				comlist.append(comdict)
+
+		for i in comlist:
+			sdict = {}
+			comment = i['body']
+			number = i['number']
+			author = i['comment_author']
+			classifier = "classified_as"
+			overall = "overall_positivity"
+			blob = TextBlob(comment, analyzer=NaiveBayesAnalyzer())
+			for sentences in blob.sentences:
+				sent = sentences.sentiment
+				sdict['comment'] = comment
+				sdict['number'] = number
+				sdict['author'] = author
+				sdict[classifier] = sent[0]
+				sdict[overall] = sent[1]
+			slist.append(sdict)
+
+		overall = 0
+		num_sentiments = len(slist)
+		for s in slist:
+			rating = s['overall_positivity']
+			print(rating)
+			overall += rating
+
+		repo_rating = overall / num_sentiments
+
+		rdict['overall_rating'] = repo_rating
+		rlist.append(rdict)
+		return rlist
 

@@ -7,6 +7,7 @@ from GHLogin import Login
 import argparse
 from reports import Report
 import csv
+from pathlib import Path
 
 parser = argparse.ArgumentParser(description="Generates reports from the GitHub API")
 parser.add_argument('-s', action="store", dest="search")
@@ -82,7 +83,9 @@ def valid_reports():
 		6 : "Issues open by Assignee",
 		7 : "Number of Comments on Closed Issues",
 		8 : "Analyze sentiment of conversations in last 100 Pull Requests",
-		9 : "Pull Requests in State=Closed with Number of Comments"
+		9 : "Pull Requests in State=Closed with Number of Comments",
+		10: "Overall sentiment rating for a repository in an org",
+		11: "Basic report of releases by a repository"
 	}
 		return valid
 
@@ -121,17 +124,31 @@ def report(rtype):
 	elif rtype == 8:
 		#This is a heavy computation. Limiting to 10 PRs, as we're analyzing each sentence
 		#in each comment in a single PR
-		pulls = get_prs(limit=10)
+		pulls = get_prs(limit=100)
 		report = Report(pulls=pulls).pr_sentiment()
 		return out2csv(report, '../reports/sentiment_analysis.csv')
 	elif rtype == 9:
 		pulls = get_prs(limit=500)
 		report = Report(pulls=pulls).pr_report()
 		return out2csv(report, '../reports/pr_report_closed.csv')
-	else:
-		return True
+	elif rtype == 10:
+		repo = get_repos()
+		pulls = get_prs(limit=50)
+		report = Report(pulls=pulls, repo=repo).sentiment_repo_report()
+		fname = '../reports/pr_sentiment_report.csv'
+		if fexists(Path(fname)):
+			return out2csv(report, '../reports/pr_sentiment_report.csv', "a")
+		else:
+			return out2csv(report, '../reports/pr_sentiment_report.csv', "w+")
+	return True
 
-def out2csv(lt, fname="tmp.csv"):
+def fexists(fname):
+	if fname.is_file():
+		return True
+	else:
+		return False
+
+def out2csv(lt, fname="tmp.csv", mode="w+"):
 	if not isinstance(lt, list):
 		return "Expected a list"
 	else:
@@ -142,11 +159,16 @@ def out2csv(lt, fname="tmp.csv"):
 			headers.update(d.keys())
 
 		print(headers)
-		with open(fname, "w+") as f:
+		with open(fname, mode) as f:
 			dw = csv.DictWriter(f, delimiter='|', fieldnames=headers)
-			dw.writerow(dict((fn, fn) for fn in headers))
-			for d in lt:
-				dw.writerow(d)
+			if mode == "a":
+				for d in lt:
+					dw.writerow(d)
+			else:
+				dw.writerow(dict((fn, fn) for fn in headers))
+				for d in lt:
+					dw.writerow(d)
+
 		return True
 def main():
 	rt = args.report_type
