@@ -8,6 +8,27 @@ class Report(object):
 		self.org = org
 		self.pulls = pulls
 
+	def parse(self):
+		plist = []
+		for pr in self.pulls:
+			pdict = {}
+			pr = pr.refresh()
+			pr = pr.to_json()
+			try:
+				pdict['id'] = pr['id']
+				pdict['number'] = pr['number']
+				pdict['state'] = pr['state']
+				pdict['title'] = pr['title']
+				pdict['assignee'] = pr['assignee']['login']
+				plist.append(pdict)
+			except TypeError:
+				continue
+		print(plist)
+
+		return plist
+
+
+
 	def user_languages(self):
 		clist = []
 		for r in self.repo:

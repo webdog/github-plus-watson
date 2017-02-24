@@ -85,7 +85,8 @@ def valid_reports():
 		8 : "Analyze sentiment of conversations in last 100 Pull Requests",
 		9 : "Pull Requests in State=Closed with Number of Comments",
 		10: "Overall sentiment rating for a repository in an org",
-		11: "Basic report of releases by a repository"
+		11: "Basic report of releases by a repository",
+		12: "JSON to CSV of last 100 Pull Requests"
 	}
 		return valid
 
@@ -140,6 +141,10 @@ def report(rtype):
 			return out2csv(report, '../reports/pr_sentiment_report.csv', "a")
 		else:
 			return out2csv(report, '../reports/pr_sentiment_report.csv', "w+")
+	elif rtype == 12:
+		pulls = get_prs(state='all', limit=100)
+		report = Report(pulls=pulls).parse()
+		return out2csv(report, '../reports/100_json_pulls.csv')
 	return True
 
 def fexists(fname):
