@@ -13,13 +13,21 @@ class Report(object):
 		for pr in self.pulls:
 			pdict = {}
 			pr = pr.refresh()
-			pr = pr.to_json()
 			try:
-				pdict['id'] = pr['id']
-				pdict['number'] = pr['number']
-				pdict['state'] = pr['state']
-				pdict['title'] = pr['title']
-				pdict['assignee'] = pr['assignee']['login']
+				pdict['number'] = pr.number
+				pdict['state'] = pr.state
+				pdict['title'] = pr.title
+				pdict['assignee'] = pr.assignee
+				pdict['number_of_comments'] = pr.comments
+				pdict['number_of_commits'] = pr.commits
+				pdict['merge_status'] = pr.mergeable
+				pdict['created_at'] = pr.created_at
+				pdict['merged_at'] = pr.merged_at
+				pdict['merged_by'] = pr.merged_by
+				pdict['additions'] = pr.additions
+				pdict['deletions'] = pr.deletions
+
+
 				plist.append(pdict)
 			except TypeError:
 				continue
