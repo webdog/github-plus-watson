@@ -86,7 +86,9 @@ def valid_reports():
 		9 : "Pull Requests in State=Closed with Number of Comments",
 		10: "Overall sentiment rating for a repository in an org",
 		11: "Basic report of releases by a repository",
-		12: "JSON to CSV of last 100 Pull Requests"
+		12: "JSON to CSV of last 100 Pull Requests",
+		13: "Merged state of Pull Request with overall Sentiment Index",
+		14: "Personality type of issue conversation contributor"
 	}
 		return valid
 
@@ -145,6 +147,14 @@ def report(rtype):
 		pulls = get_prs(state='all', limit=100)
 		report = Report(pulls=pulls).parse()
 		return out2csv(report, '../reports/100_json_pulls.csv')
+	elif rtype == 13:
+		pulls = get_prs(state='all', limit=50)
+		report = Report(pulls=pulls).parse_sentiment_of_pulls()
+		return out2csv(report, '../reports/100_pulls_with_sentiment.csv')
+	elif rtype == 14:
+		repo = get_repos()
+		report = Report(repo=repo).personality_report()
+		return out2csv(report, '../reports/issue_insights')
 	return True
 
 def fexists(fname):

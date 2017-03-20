@@ -1,12 +1,113 @@
 #!/usr/bin/env python3
 from textblob import TextBlob
 from textblob.sentiments import NaiveBayesAnalyzer
+from watson_developer_cloud import AlchemyLanguageV1
+from watson_developer_cloud import PersonalityInsightsV3
+from watson_developer_cloud import WatsonException
+import json
+import numpy as np
 
 class Report(object):
 	def __init__(self, repo=None, org=None, pulls=None):
 		self.repo = repo
 		self.org = org
 		self.pulls = pulls
+
+	def personality_report(self):
+		ilist = []
+		commlist = []
+
+		issues = []
+
+		comms = []
+
+		for r in self.repo:
+			issues= r.iter_issues(number=15, state='all')
+			for i in issues:
+				ilist.append(i)
+
+		for i in ilist:
+			i = i.refresh()
+			comments = i.iter_comments()
+			for c in comments:
+				comms.append(c)
+
+			personality_insights = PersonalityInsightsV3(
+			version = '2016-10-20',
+			username = '',
+			password = '')
+
+		for c in comms:
+			c = c.refresh()
+			cdict = {}
+			comment = c.body
+			comment = comment.encode('utf-8')
+			counter = 5
+			if len(comment.split()) < 110:
+				print("lt 100")
+				pass
+			else:
+				print("gt 100")
+				#print(comment)
+				while counter > 0:
+					#cdict['author'] = c.user
+					print("and another one")
+					profile = personality_insights.profile(comment, content_type='text/plain', raw_scores=True, consumption_preferences=False)
+					traits = profile['personality']
+					for dicts in traits:
+						for key in dicts:
+							cdict['author'] = c.user
+							cdict[dicts['name']] = dicts['percentile']
+							counter = counter - 1
+
+					commlist.append(cdict)
+					print(json.dumps(profile, indent=2))
+		return commlist
+
+	def parse_sentiment_of_pulls(self):
+		plist = []
+		analyzer = AlchemyLanguageV1(api_key='your-token-goes-here')
+		for pr in self.pulls:
+			pdict = {}
+			pr = pr.refresh()
+			try:
+				pdict['number'] = pr.number
+				pdict['state'] = pr.state
+				pdict['title'] = pr.title
+				pdict['assignee'] = pr.assignee
+				pdict['number_of_comments'] = pr.comments
+				pdict['number_of_commits'] = pr.commits
+				pdict['merge_status'] = pr.mergeable
+				pdict['created_at'] = pr.created_at
+				pdict['merged_at'] = pr.merged_at
+				pdict['merged_by'] = pr.merged_by
+				pdict['additions'] = pr.additions
+				pdict['deletions'] = pr.deletions
+
+
+				comments = pr.iter_comments()
+				for c in comments:
+					anlist = []
+					try:
+						analysis = analyzer.sentiment(text=str(c.body))
+						print(analysis)
+					except WatsonException:
+						pass
+
+					if analysis['docSentiment']['type'] != 'neutral':
+						print(json.dumps(analysis, indent=2))
+						anlist.append(float(analysis['docSentiment']['score']))
+					#Neutrality provides no JSON response, so we'll set the value ourselves
+					else:
+						anlist.append(.5)
+
+					print(anlist)
+					pdict['average_sentiment'] = sum(anlist) / len(anlist)
+
+				plist.append(pdict)
+			except TypeError:
+				continue
+		return plist
 
 	def parse(self):
 		plist = []
